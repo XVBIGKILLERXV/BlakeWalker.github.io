@@ -534,18 +534,19 @@
      DEVELOPER MODE
   ========================================================= */
 
-  function toggleDeveloperMode() {
-    const root = document.documentElement;
+function toggleDeveloperMode() {
+  const root = document.documentElement;
 
-    root.classList.toggle("bw-dev-mode");
+  root.classList.toggle("bw-dev-mode");
 
-    if (root.classList.contains("bw-dev-mode")) {
-      document.body.dataset.dev = "DEVELOPER MODE";
-    } else {
-      delete document.body.dataset.dev;
-    }
-  }
+  const enabled = root.classList.contains("bw-dev-mode");
 
+  console.log(
+    enabled
+      ? "Developer Mode Enabled"
+      : "Developer Mode Disabled"
+  );
+}
 
   /* =========================================================
      HERO EASTER EGG
