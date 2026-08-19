@@ -1,6 +1,8 @@
 # Blake Walker — Creative Developer
 
-Personal GitHub Pages portfolio for Blake Walker, customised around the uploaded static-site structure.
+Personal GitHub Pages portfolio for Blake Walker, customized around the uploaded static-site structure.
+
+Live: https://xvbigkillerxv.github.io
 
 ## Selected work
 
