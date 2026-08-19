@@ -1,0 +1,1282 @@
+/* Blake Walker portfolio — purple/black, identity-forward landing page
+   Palette matched to Blake Walker's Discord profile: deep purple-black, violet and soft lavender. */
+
+:root {
+  --bg-0: #07040d;            /* deepest purple black */
+  --bg-1: #10071c;            /* aubergine base */
+  --bg-2: #2a0b45;            /* violet highlight for the gradient */
+  --ink: #f4edf9;             /* soft white-lavender — primary text */
+  --ink-dim: #cdbdd8;         /* muted lavender — secondary */
+  --ink-faint: #927ba7;       /* faint — meta */
+  --accent: #8b2cff;          /* electric violet — links / hover */
+  --accent-soft: #c05cff;     /* bright lavender — secondary accent */
+  --hair: rgba(244, 237, 249, 0.13);
+  --hair-strong: rgba(244, 237, 249, 0.26);
+
+  /* astro glyph coverage + aspect palette */
+  --glyph: "Segoe UI Symbol", "Noto Sans Symbols2", "Apple Symbols", "Segoe UI Emoji", var(--serif);
+  --mono: ui-monospace, "Cascadia Code", "Cascadia Mono", "Segoe UI Mono", Consolas, monospace;
+  --hard: #ef4cff;   /* square / opposition — magenta */
+  --soft: #66d9ff;   /* trine / sextile — electric cyan */
+  --conj: #bd7cff;   /* conjunction — lavender */
+
+  --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --maxw: 660px;
+  --pad: clamp(1.5rem, 5vw, 3rem);
+  --main-gap: clamp(3rem, 12vh, 6.5rem);   /* between the page's major sections */
+  --screen-gap: clamp(2.2rem, 6vh, 3.6rem); /* between blocks inside .screen */
+  /* Breathing room on BOTH sides of the link shelf — above it to the Selected
+     Work grid, below it to the Discord card — so it sits centred between them.
+     Used by .elsewhere's gap and its margin-top; keep them derived from this. */
+  --shelf-gap: clamp(1.5rem, 3.8vh, 2.25rem);
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--bg-0);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.55;
+}
+
+/* ---- Background: blurred looping video + tinted fallback + scrim ---- */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  /* Deep purple fallback — this is what shows until a video is dropped in,
+     and behind any video whose frame is transparent while loading. */
+  background:
+    radial-gradient(120% 130% at 72% 8%, var(--bg-2) 0%, transparent 46%),
+    linear-gradient(158deg, #160825 0%, var(--bg-1) 52%, var(--bg-0) 100%);
+}
+
+.bg__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: transparent;
+  /* Slightly blurred, per the brief; scale hides the soft blur edge. */
+  filter: blur(4px) saturate(1.06) contrast(1.02);
+  transform: scale(1.09);
+  opacity: 0;
+  transition: opacity 1.2s var(--ease);
+}
+.bg__video.is-ready { opacity: 1; }
+
+.bg__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(115% 95% at 26% 22%, transparent 0%, rgba(7, 4, 13, 0.70) 100%),
+    linear-gradient(185deg, rgba(7, 4, 13, 0.50) 0%, rgba(7, 4, 13, 0.40) 40%, rgba(7, 4, 13, 0.86) 100%);
+}
+
+/* Faint film grain for the soft digital texture (self-contained SVG noise). */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- Layout ---- */
+main {
+  position: relative;
+  width: 100%;
+  padding: 0 var(--pad);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--main-gap);
+  /* Legibility insurance over busy footage — imperceptible over dark footage. */
+  text-shadow: 0 1px 2px rgba(5, 2, 10, 0.5);
+}
+/* A definite width, not shrink-to-fit. .elsewhere is here so the Discord card
+   has a width to fill: left to size itself, it resolves to its own min-content
+   and a long activity name or display name pushes it past the viewport. */
+.screen, .foot, .chart, .tarot, .elsewhere { width: 100%; max-width: var(--maxw); }
+
+/* First screenful: the identity hero, curated links and the shelf/Discord
+   pair, vertically centered. */
+.screen {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--screen-gap);
+  padding: max(var(--pad), env(safe-area-inset-top)) 0 4vh;
+}
+/* Center the block when there's room; fall back to top-aligned (never clip the
+   hero) when the content is taller than the viewport. The bottom `auto` sits on
+   the LAST child: on it, the slack falls below the group; on .links it would
+   open up between the grid and the shelf and throw the shelf off centre. */
+.screen > .hero { margin-top: auto; }
+.screen > .elsewhere { margin-bottom: auto; }
+
+/* ---- Identity hero ---- */
+.hero__mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.hero__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 14px 1px rgba(139, 44, 255, 0.7);
+}
+
+.hero__name {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(2.7rem, 8vw, 4.7rem);
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  perspective: 900px;      /* subtle depth for the spindle roll */
+  white-space: nowrap;
+}
+
+/* Rotating-spindle prefix: data → deni → sylvi → data, with "terminals" fixed.
+   The window clips one word; the track rolls vertically; the window width
+   tweens between prefixes so the suffix re-tucks smoothly. */
+.spindle {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  height: 1.5em;                           /* tall enough to fully contain the "y" descender */
+  width: 4ch;                              /* JS sets a constant slot width = widest prefix */
+  vertical-align: -0.42em;                 /* tuned so the word baseline meets "terminals" */
+}
+.spindle__track {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;                   /* right-align: the suffix junction never moves */
+  transform: translateY(0);
+  transition: transform 0.62s cubic-bezier(0.42, 0.15, 0.16, 1.02);
+  will-change: transform;
+}
+.spindle__track.is-rolling { filter: blur(0.4px); }   /* faint motion blur */
+.spindle__word {
+  flex: 0 0 auto;
+  height: 1.5em;
+  line-height: 1.5em;
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* Tagline: a one-time, scattered multilingual "In my work…" fade-in
+   (an homage to blackdenim.carrd.co), laid out horizontally in the tagline band. */
+.hero__tagline {
+  position: relative;
+  margin: 1.05rem 0 0;
+  height: clamp(7rem, 16vh, 8.2rem);
+  max-width: min(100%, 40rem);
+  font-weight: 400;
+}
+.tl {
+  position: absolute;
+  white-space: nowrap;
+  color: var(--ink-faint);
+  opacity: 0;
+  /* entrance once, then a lazy perpetual drift that starts after it lands */
+  animation: tl-in 1.5s var(--ease) both, tl-float var(--fd, 9s) ease-in-out infinite;
+  animation-delay: var(--d, 0s), calc(var(--d, 0s) + 1.5s);
+  text-shadow: 0 1px 3px rgba(5, 2, 10, 0.6);
+  will-change: transform;
+}
+/* varied drift speeds so the phrases desync into an organic float */
+.tl:nth-child(1) { --fd: 9.5s; }
+.tl:nth-child(2) { --fd: 11s; }
+.tl:nth-child(3) { --fd: 8.5s; }
+.tl:nth-child(4) { --fd: 10.5s; }
+.tl:nth-child(5) { --fd: 9s; }
+.tl:nth-child(6) { --fd: 12s; }
+.tl:nth-child(7) { --fd: 8s; }
+.tl:nth-child(8) { --fd: 11.5s; }
+.tl:nth-child(9) { --fd: 10s; }
+@keyframes tl-float {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  25%  { transform: translate3d(1.5px, -2.5px, 0) rotate(0.3deg); }
+  50%  { transform: translate3d(-1px, 1.5px, 0) rotate(-0.25deg); }
+  75%  { transform: translate3d(-2px, -1px, 0) rotate(0.2deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+.tl-en {
+  color: var(--ink-dim);
+  text-shadow: 0 1px 3px rgba(5, 2, 10, 0.6), 0 0 8px rgba(218, 198, 232, 0.38), 0 0 18px rgba(139, 44, 255, 0.2);
+  animation: tl-in 1.5s var(--ease) both, en-flicker 7s ease-in-out infinite, tl-float var(--fd, 9.5s) ease-in-out infinite;
+  animation-delay: 0.2s, 2s, 1.7s;
+}
+/* ever-so-slight glow flicker on the English anchor */
+@keyframes en-flicker {
+  0%, 100% { opacity: 0.95; text-shadow: 0 1px 3px rgba(5,2,10,.6), 0 0 8px rgba(218,198,232,.38), 0 0 18px rgba(139,44,255,.2); }
+  7%  { opacity: 0.87; text-shadow: 0 1px 3px rgba(5,2,10,.6), 0 0 5px rgba(218,198,232,.26), 0 0 12px rgba(139,44,255,.11); }
+  8%  { opacity: 0.95; text-shadow: 0 1px 3px rgba(5,2,10,.6), 0 0 8px rgba(218,198,232,.38), 0 0 18px rgba(139,44,255,.2); }
+  40% { opacity: 0.96; text-shadow: 0 1px 3px rgba(5,2,10,.6), 0 0 10px rgba(218,198,232,.44), 0 0 22px rgba(139,44,255,.24); }
+  42% { opacity: 0.82; text-shadow: 0 1px 3px rgba(5,2,10,.6), 0 0 4px rgba(218,198,232,.2), 0 0 10px rgba(139,44,255,.09); }
+  43% { opacity: 0.94; text-shadow: 0 1px 3px rgba(5,2,10,.6), 0 0 8px rgba(218,198,232,.38), 0 0 18px rgba(139,44,255,.2); }
+  71% { opacity: 0.96; text-shadow: 0 1px 3px rgba(5,2,10,.6), 0 0 8px rgba(218,198,232,.38), 0 0 18px rgba(139,44,255,.2); }
+  72.5% { opacity: 0.88; text-shadow: 0 1px 3px rgba(5,2,10,.6), 0 0 6px rgba(218,198,232,.3), 0 0 14px rgba(139,44,255,.14); }
+  74% { opacity: 0.95; text-shadow: 0 1px 3px rgba(5,2,10,.6), 0 0 8px rgba(218,198,232,.38), 0 0 18px rgba(139,44,255,.2); }
+}
+@keyframes tl-in {
+  from { opacity: 0; transform: translateY(9px) scale(0.98); filter: blur(5px); }
+  to   { opacity: var(--o, 1); transform: none; filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl { animation: none; opacity: var(--o, 1); transform: none; filter: none; }
+}
+@media (max-width: 480px) {
+  .hero__tagline { height: 7rem; max-width: 23rem; }
+  .tl { font-size: 0.9rem !important; }
+  .tl-en { font-size: 1.05rem !important; }
+}
+
+/* Centered italic sub-tagline in the gap below the multilingual band: one
+   random phrase from subtaglines.json, flickering + drifting like .tl-en. */
+.hero__subtag {
+  margin: 0.15rem 0 0;
+  min-height: 1.5em;              /* reserve a line so JS injection doesn't shift layout */
+  text-align: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(0.95rem, 2.6vw, 1.1rem);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  color: var(--ink-dim);
+}
+.subtag__phrase {
+  display: inline-block;
+  color: var(--ink-dim);
+  text-shadow: 0 1px 3px rgba(5, 2, 10, 0.6), 0 0 8px rgba(218, 198, 232, 0.34), 0 0 18px rgba(139, 44, 255, 0.18);
+  /* Prefer a single line; when a phrase can't fit, break into balanced lines of
+     near-equal length (centered by .hero__subtag) rather than a long+short pair. */
+  text-wrap: balance;
+  /* entrance once, then perpetual flicker + drift (mirrors the English anchor) */
+  animation: tl-in 1.5s var(--ease) both, en-flicker 7s ease-in-out infinite, tl-float 10s ease-in-out infinite;
+  animation-delay: 0.4s, 2.2s, 1.9s;
+  will-change: transform;
+}
+/* Word wrapper: keeps a word unbreakable so the line only wraps at real spaces. */
+.subtag__word { display: inline-block; white-space: nowrap; }
+/* Per-character host for the occasional glitch. inline-block keeps a stable
+   box width so a glitched glyph can overlay without nudging its neighbours.
+   Shared by the sub-tagline and the multilingual tagline band (.tl-char). */
+.subtag__char, .tl-char { display: inline-block; position: relative; }
+/* While glitching, hide the real glyph (and its shadow) but keep its width. */
+.subtag__char.is-glitch, .tl-char.is-glitch { color: transparent; text-shadow: none; }
+/* The glitch glyph itself: absolutely positioned so the line never reflows. */
+.subtag__glitch {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  font-family: var(--glyph);   /* astro-symbol coverage */
+  font-style: normal;          /* symbols shouldn't inherit the italic slant */
+  color: var(--accent-soft);
+  text-shadow: 0 0 5px rgba(192, 92, 255, 0.55), 0 0 11px rgba(139, 44, 255, 0.3);
+  pointer-events: none;
+  animation: subtag-glitch 0.16s steps(2, end) both;
+}
+@keyframes subtag-glitch {
+  0%   { opacity: 0.2;  transform: translateX(-50%) skewX(-8deg); }
+  30%  { opacity: 1;    transform: translateX(-53%) translateY(-0.5px) skewX(6deg); }
+  60%  { opacity: 0.85; transform: translateX(-47%) translateY(0.5px) skewX(-3deg); }
+  100% { opacity: 1;    transform: translateX(-50%) skewX(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .subtag__phrase { animation: none; }
+  .subtag__glitch { display: none; }
+}
+
+/* ---- Links (card grid) ---- */
+.links__eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 0.9rem;
+}
+
+.links__list {
+  display: grid;
+  grid-template-columns: 1fr;              /* one card per row on narrow screens */
+  gap: clamp(0.7rem, 2vw, 0.95rem);
+}
+/* Two columns once there's room; the grid stretches paired cells to equal
+   height, so their bottom "updated" stamps line up across the row. */
+@media (min-width: 34rem) {
+  .links__list { grid-template-columns: 1fr 1fr; }
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 1rem 1.1rem 0.9rem;
+  border: 1px solid rgba(139, 44, 255, 0.18);
+  border-radius: 11px;
+  background: linear-gradient(165deg, rgba(30, 10, 50, 0.5), rgba(10, 5, 18, 0.58));
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.3s var(--ease), background 0.3s var(--ease),
+              transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.link:hover,
+.link:focus-visible {
+  border-color: rgba(139, 44, 255, 0.42);
+  background: linear-gradient(165deg, rgba(38, 12, 64, 0.66), rgba(12, 6, 22, 0.72));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+  outline: none;
+}
+.link:focus-visible { border-color: var(--accent); }
+
+.link__main { min-width: 0; }
+
+.link__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(1.12rem, 2.5vw, 1.32rem);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  transition: color 0.25s var(--ease);
+}
+.link:hover .link__title,
+.link:focus-visible .link__title { color: var(--accent-soft); }
+
+.link__arrow {
+  font-family: var(--sans);
+  font-size: 0.95em;
+  color: var(--ink-faint);
+  transform: translateX(-2px);
+  opacity: 0;
+  transition: transform 0.3s var(--ease), opacity 0.3s var(--ease), color 0.25s var(--ease);
+}
+.link:hover .link__arrow,
+.link:focus-visible .link__arrow {
+  opacity: 1;
+  transform: translateX(2px);
+  color: var(--accent);
+}
+
+.link__blurb {
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
+
+.link__meta {
+  align-self: flex-end;             /* bottom-right stamp… */
+  margin-top: auto;                 /* …pinned to the card's base */
+  padding-top: 0.9rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+.link__meta.is-shown { opacity: 1; }
+.link__meta .dot { opacity: 0.5; margin: 0 0.4em; }
+.link__meta .star { color: var(--accent-soft); }
+
+/* ---- Current project: the live beacon above the grid ----
+   Whichever repo was pushed last, injected by app.js. It takes a row of its own
+   and carries an ember outline that breathes on the same irregular rhythm as the
+   shelf icons and the chart anchor, so the page has one glow language. */
+.link--current {
+  grid-column: 1 / -1;
+  border-color: rgba(139, 44, 255, 0.42);
+  background: linear-gradient(165deg, rgba(43, 13, 72, 0.62), rgba(13, 7, 24, 0.66));
+  will-change: box-shadow;
+  /* Static floor for the glow. The animation overrides it whenever it runs
+     (animations outrank normal declarations, hover included), so this is what
+     shows under prefers-reduced-motion, where the global rule kills it. */
+  box-shadow: 0 0 18px rgba(139, 44, 255, 0.2), 0 0 40px rgba(139, 44, 255, 0.11), 0 8px 22px rgba(0, 0, 0, 0.3);
+}
+.link--current:hover,
+.link--current:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 22px rgba(139, 44, 255, 0.28), 0 0 50px rgba(139, 44, 255, 0.15), 0 8px 22px rgba(0, 0, 0, 0.32);
+}
+
+/* The kicker naming what the card is — sized off .links__eyebrow so the two
+   read as the same voice, but warm rather than faint. */
+.link__kicker {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+  opacity: 0.85;
+  text-shadow: 0 0 10px rgba(139, 44, 255, 0.35);
+}
+
+/* Irregular, like shelf-flicker — a glow that wavers rather than pulsing on a
+   metronome. Kept to box-shadow so it never fights the card's hover transform. */
+@keyframes ember-breathe {
+  0%, 100% { box-shadow: 0 0 15px rgba(139, 44, 255, 0.17), 0 0 34px rgba(139, 44, 255, 0.09), 0 8px 22px rgba(0, 0, 0, 0.3); }
+  18%      { box-shadow: 0 0 20px rgba(139, 44, 255, 0.25), 0 0 46px rgba(139, 44, 255, 0.14), 0 8px 22px rgba(0, 0, 0, 0.3); }
+  31%      { box-shadow: 0 0 12px rgba(139, 44, 255, 0.13), 0 0 28px rgba(139, 44, 255, 0.07), 0 8px 22px rgba(0, 0, 0, 0.3); }
+  54%      { box-shadow: 0 0 22px rgba(139, 44, 255, 0.28), 0 0 52px rgba(139, 44, 255, 0.16), 0 8px 22px rgba(0, 0, 0, 0.3); }
+  67%      { box-shadow: 0 0 14px rgba(139, 44, 255, 0.15), 0 0 30px rgba(139, 44, 255, 0.08), 0 8px 22px rgba(0, 0, 0, 0.3); }
+  83%      { box-shadow: 0 0 19px rgba(139, 44, 255, 0.23), 0 0 42px rgba(139, 44, 255, 0.13), 0 8px 22px rgba(0, 0, 0, 0.3); }
+}
+
+/* ---- Footer ---- */
+.foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}
+.foot a {
+  color: var(--ink-dim);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.foot a:hover,
+.foot a:focus-visible {
+  color: var(--accent-soft);
+  border-bottom-color: var(--hair-strong);
+  outline: none;
+}
+.foot__sep { opacity: 0.4; }
+
+/* ================= Natal chart ================= */
+.chart {
+  position: relative;                         /* anchors .chart__anchor */
+  padding-top: clamp(1.5rem, 4vh, 2rem);      /* a band for the permalink handle */
+  padding-bottom: 2vh;
+  scroll-margin-top: clamp(0.75rem, 3vh, 1.75rem);  /* don't land flush at the top */
+}
+/* Permalink to #natalchart — the one bit of chrome on an otherwise headless
+   section, so keep it faint until hovered. Reuses the shelf's float/flicker
+   keyframes for a common visual language; negative delays desync it from them.
+   The global reduced-motion rule kills the animation. */
+.chart__anchor {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  width: clamp(19px, 4.5vw, 22px);
+  height: clamp(19px, 4.5vw, 22px);
+  color: var(--ink-faint);
+  will-change: transform, opacity;
+  animation: shelf-float 10.5s ease-in-out infinite, shelf-flicker 8.6s ease-in-out infinite;
+  animation-delay: -3.7s, -2.4s;
+  transition: color 0.3s var(--ease);
+}
+.chart__anchor svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px rgba(139, 44, 255, 0.28)) drop-shadow(0 1px 2px rgba(5, 2, 10, 0.5));
+  transition: transform 0.3s var(--ease), filter 0.3s var(--ease);
+}
+.chart__anchor:hover,
+.chart__anchor:focus-visible { color: var(--accent-soft); outline: none; }
+.chart__anchor:hover svg,
+.chart__anchor:focus-visible svg {
+  transform: translateY(-2px) scale(1.1);
+  filter: drop-shadow(0 0 8px rgba(192, 92, 255, 0.6)) drop-shadow(0 0 16px rgba(139, 44, 255, 0.35));
+}
+.chart__eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 clamp(1.2rem, 4vh, 2.2rem);
+}
+.chart__sub { color: rgba(146, 123, 167, 0.7); }
+
+/* Control bar — sits above the two-column wrap so neither column has to give
+   up width. Two segmented switches: which house system draws the cusps, and
+   whether the wheel shows every aspect or only the tight ones. */
+.chart__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.9rem, 3vw, 2rem);
+  margin: 0 0 clamp(1.1rem, 3.5vh, 1.9rem);
+}
+.ctl { display: flex; align-items: center; gap: 0.6em; }
+.ctl__label {
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  flex: 0 0 auto;
+}
+.seg {
+  --cols: 2;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  padding: 2px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: rgba(244, 237, 249, 0.03);
+}
+/* Once the options wrap to more than one row a pill outline reads wrong. */
+.seg[data-many] { --cols: 4; border-radius: 14px; }
+.seg__glide {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;                            /* both set from the live button box */
+  border-radius: 999px;
+  background: rgba(139, 44, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(192, 92, 255, 0.34), 0 0 10px rgba(139, 44, 255, 0.18);
+  transition: transform 0.34s var(--ease), width 0.34s var(--ease), height 0.2s var(--ease);
+}
+.seg__opt {
+  position: relative;
+  z-index: 1;
+  appearance: none;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 0.42em 0.95em;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--ink-faint);
+  border-radius: 999px;
+  transition: color 0.2s var(--ease);
+}
+.seg__opt:hover { color: var(--ink-dim); }
+.seg__opt[aria-checked="true"] { color: var(--ink); }
+.seg__opt:focus-visible { outline: none; color: var(--ink); box-shadow: 0 0 0 1px var(--accent-soft); }
+@media (prefers-reduced-motion: reduce) { .seg__glide { transition: none; } }
+/* Four house names won't sit beside their label on a narrow phone — stack the
+   label and tighten the options rather than let the switch run off-screen. */
+@media (max-width: 480px) {
+  .chart__controls { gap: 0.85rem 1.1rem; }
+  .ctl { flex-direction: column; align-items: stretch; gap: 0.45em; }
+  .ctl__label { text-align: center; }
+  .seg__opt { font-size: 0.64rem; padding: 0.42em 0.72em; }
+  .seg[data-many] { --cols: 3; }
+}
+
+.chart__wrap {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(1.25rem, 4vw, 2.8rem);
+}
+.chart__aside { flex: 0 0 auto; width: clamp(198px, 34%, 244px); }
+.chart__wheelbox { position: relative; flex: 1 1 auto; min-width: 0; max-width: 420px; }
+.wheel { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* rings + ticks */
+.ring-c { fill: none; stroke: var(--hair-strong); stroke-width: 1; }
+.ring-hub { stroke: rgba(244, 237, 249, 0.09); }
+.ring-spoke { stroke: var(--hair); stroke-width: 1; }
+.ring-mini { stroke: var(--hair); stroke-width: 1; }
+
+/* zodiac signs, tinted by element */
+.sign { font-family: var(--glyph); font-size: 15px; }
+.sign-fire { fill: #b44cff; }
+.sign-earth { fill: #aa8fc2; }
+.sign-air { fill: #c9a7e8; }
+.sign-water { fill: #73c7e8; }
+
+/* houses */
+.cusp { stroke: var(--hair); stroke-width: 1; }
+.cusp-axis { stroke: rgba(196, 124, 255, 0.55); stroke-width: 1.4; }
+.house-num { font-family: var(--sans); font-size: 8px; fill: var(--ink-faint); }
+.axis-label { font-family: var(--sans); font-size: 9.5px; letter-spacing: 0.06em; fill: var(--ink-dim); }
+
+/* planets */
+.deg-tick { stroke: var(--ink-dim); stroke-width: 1.2; }
+.p-conn { stroke: var(--hair); stroke-width: 1; }
+.p-halo { fill: var(--accent-soft); opacity: 0; transition: opacity 0.2s var(--ease); }
+.p-glyph { font-family: var(--glyph); font-size: 16px; fill: var(--ink); filter: url(#glow); transition: fill 0.2s var(--ease); }
+.p-retro { font-family: var(--glyph); font-size: 8px; fill: var(--ink-faint); }
+.planet { cursor: pointer; }
+.planet:focus-visible { outline: none; }
+
+/* aspects — hidden by default, majors faintly drawn */
+.asp { fill: none; stroke-width: 1; opacity: 0; transition: opacity 0.25s var(--ease), stroke-width 0.2s var(--ease); }
+.asp-major { opacity: 0.26; }
+.asp-hard { stroke: var(--hard); }
+.asp-soft { stroke: var(--soft); }
+.asp-conj { stroke: var(--conj); }
+
+/* focus states */
+.wheel.is-focused .asp:not(.is-on) { opacity: 0.05; }
+.wheel.is-focused .planet:not(.is-on) { opacity: 0.38; }
+.asp.is-on { opacity: 0.95; stroke-width: 1.7; filter: url(#glowSoft); }
+
+/* Tight-orb view: everything wider than 1°30′ drops out, and what's left is
+   drawn hotter than the default resting state — these are the loud ones. */
+.wheel.is-tight .asp { opacity: 0; }
+/* Needed because .wheel.is-focused .asp:not(.is-on) scores a class higher than
+   the plain hide rule above — without this the wide aspects creep back on hover. */
+.wheel.is-tight.is-focused .asp:not(.asp-tight) { opacity: 0; }
+.wheel.is-tight .asp-tight { opacity: 0.6; stroke-width: 1.3; }
+.wheel.is-tight.is-focused .asp-tight:not(.is-on) { opacity: 0.13; }
+.wheel.is-tight .asp-tight.is-on { opacity: 1; stroke-width: 1.9; filter: url(#glowSoft); }
+.planet.is-on .p-halo { opacity: 0.16; }
+.planet.is-on .p-glyph,
+.planet:focus-visible .p-glyph { filter: url(#glowSoft); }
+.planet:focus-visible .p-halo { opacity: 0.12; }
+
+/* aspect detail — sits in the left column below the placements, so the wheel is never covered */
+.chart__detail {
+  margin-top: 1.05rem;
+  padding-top: 0.95rem;
+  border-top: 1px solid var(--hair);
+  min-height: 9.5rem;
+  text-shadow: none;
+}
+.chart__detail strong { font-family: var(--serif); font-weight: 500; font-size: 1.06rem; color: var(--ink); }
+.chart__detail .pl-r { color: var(--accent-soft); }
+.cd-hint { margin: 0 0 0.6rem; font-size: 0.78rem; color: var(--ink-faint); }
+.cd-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.34rem; }
+.cd-legend li { display: flex; align-items: center; gap: 0.55em; font-size: 0.76rem; color: var(--ink-dim); }
+.cd-sw { width: 15px; height: 3px; border-radius: 2px; flex: 0 0 auto; background: currentColor; box-shadow: 0 0 5px currentColor; }
+.cd-note {
+  margin: 0.7rem 0 0;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--hair);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--ink-faint);
+}
+.cd-note strong { font-family: var(--sans); font-weight: 500; font-size: 0.72rem; color: var(--ink-dim); }
+.cd-note--on { border-top: 0; padding-top: 0.15rem; margin-top: 0.3rem; color: var(--accent-soft); }
+.tip-pos { display: block; margin-top: 0.12rem; font-size: 0.74rem; letter-spacing: 0.02em; color: var(--ink-dim); }
+.tip-asps { list-style: none; margin: 0.6rem 0 0; padding: 0.55rem 0 0; border-top: 1px solid var(--hair); display: grid; gap: 0.26rem; }
+.tip-asps li { font-size: 0.78rem; color: var(--ink-dim); display: flex; align-items: baseline; gap: 0.45em; }
+.tip-asp { font-family: var(--glyph); width: 1em; text-align: center; flex: 0 0 auto; }
+.tip-name { flex: 1 1 auto; }
+.tip-hard { color: var(--hard); }
+.tip-soft { color: var(--soft); }
+.tip-conj { color: var(--conj); }
+.tip-orb { margin-left: auto; color: var(--ink-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* An aspect inside 1°30′ reads as exact — mark its orb even in the "All" view. */
+.tip-is-tight .tip-orb { color: var(--accent-soft); }
+.tip-is-tight .tip-name { color: var(--ink); }
+
+/* placements list (the <ul> itself) */
+.chart__list { list-style: none; margin: 0; padding: 0; }
+.chart__list li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55em;
+  padding: 0.26rem 0.45rem;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  cursor: default;
+  transition: background 0.2s var(--ease);
+}
+.chart__list li:hover,
+.chart__list li.is-on { background: rgba(244, 237, 249, 0.06); }
+.chart__list li:focus-visible { outline: none; background: rgba(244, 237, 249, 0.06); }
+.pl-glyph { font-family: var(--glyph); width: 1.3em; text-align: center; color: var(--ink-dim); flex: 0 0 auto; }
+.pl-name { color: var(--ink); flex: 1 1 auto; }
+.pl-r { color: var(--accent-soft); font-family: var(--glyph); }
+.pl-pos { color: var(--ink-dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pl-sg { font-family: var(--glyph); color: var(--ink-faint); }
+
+/* keep every astro glyph monochrome (no emoji tiles) where the browser supports it */
+.sign, .p-glyph, .p-retro, .pl-glyph, .pl-sg, .tip-asp, .chart__tip strong { font-variant-emoji: text; }
+.pl-house { color: var(--ink-faint); font-size: 0.78em; min-width: 2.7em; text-align: right; flex: 0 0 auto; }
+/* Flashes when a house-system change actually moves a placement. */
+.pl-house--moved { animation: house-moved 1.5s var(--ease) 1; }
+@keyframes house-moved {
+  0%, 55% { color: var(--accent-soft); text-shadow: 0 0 8px rgba(139, 44, 255, 0.5); }
+  100% { color: var(--ink-faint); text-shadow: none; }
+}
+/* Cusps + house numbers fade back in when the system is swapped. */
+.w-cusps.is-swapping { animation: cusp-swap 0.42s var(--ease) 1; }
+@keyframes cusp-swap { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .pl-house--moved, .w-cusps.is-swapping { animation: none; }
+}
+/* angle rows (Ascendant / Midheaven) */
+.pl-abbr { font-family: var(--sans); font-size: 0.64rem; letter-spacing: 0.07em; color: var(--ink-faint); }
+.pl-angle .pl-name { color: var(--ink-dim); }
+.pl-groupsep { margin-top: 0.35rem; padding-top: 0.55rem; border-top: 1px solid var(--hair); }
+/* interactive AC/MC labels on the wheel */
+.axis-label[data-body="asc"], .axis-label[data-body="mc"] { cursor: pointer; }
+.axis-label { transition: fill 0.2s var(--ease); }
+.axis-label.is-on { fill: var(--accent-soft); }
+.axis-label:focus-visible { outline: none; }
+.wheel.is-focused .axis-label:not(.is-on) { opacity: 0.4; }
+
+@media (max-width: 640px) {
+  .chart__wrap { flex-direction: column-reverse; align-items: center; }
+  .chart__aside { width: 100%; max-width: 400px; }
+}
+
+/* ================= Tarot ================= */
+/* Ends the page, so it carries the tail the shelf used to. */
+.tarot { padding-bottom: 7vh; }
+.tarot__deck { display: flex; flex-direction: column; gap: clamp(1.4rem, 4vw, 2.2rem); }
+.tarot__featured { display: flex; flex-direction: column; align-items: center; gap: 0.95rem; }
+.sig-row { display: flex; align-items: center; justify-content: center; gap: clamp(0.25rem, 1.5vw, 1rem); }
+.sig-diagram { width: clamp(128px, 22vw, 190px); height: auto; overflow: visible; flex: 0 1 auto; }
+.sig-line { stroke: var(--hair-strong); stroke-width: 0.75; }
+.sig-node { fill: var(--accent-soft); }
+.sig-tick { fill: var(--ink-faint); }
+.sig-label { fill: var(--ink-faint); font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; }
+.sig-val { fill: var(--ink-dim); font-family: var(--mono); font-size: 9px; }
+.sig-caption { margin: 0; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.03em; color: var(--ink-faint); text-align: center; text-shadow: none; }
+@media (max-width: 640px) { .sig-diagram { display: none; } }
+.tarot__group-label { font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 0.85rem; text-align: center; }
+.tarot__grid { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(0.55rem, 1.6vw, 0.85rem); }
+
+.tcard {
+  --w: 104px; --suit: var(--accent-soft);
+  width: var(--w); height: calc(var(--w) * 1.6);
+  padding: 0; border: 0; background: none; font: inherit;
+  perspective: 900px; cursor: pointer; text-shadow: none; flex: 0 0 auto;
+}
+.tcard--featured { --w: 156px; }
+.tarot__grid .tcard { --w: 89px; }
+.tcard[data-suit="wands"] { --suit: var(--hard); }
+.tcard[data-suit="cups"] { --suit: var(--soft); }
+.tcard[data-suit="swords"] { --suit: #c9c6dc; }
+.tcard[data-suit="pentacles"] { --suit: var(--conj); }
+
+.tcard__inner { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.7s var(--ease); }
+.tcard:hover .tcard__inner, .tcard:focus-visible .tcard__inner { transform: translateY(-4px); }
+.tcard.is-flipped .tcard__inner { transform: rotateY(180deg); }
+.tcard:focus-visible { outline: none; }
+
+.tcard__face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0.6rem 0.5rem; text-align: center; overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(139, 44, 255, 0.28);
+  background: linear-gradient(165deg, rgba(30, 10, 50, 0.9), rgba(10, 5, 18, 0.94));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.38), inset 0 0 20px rgba(139, 44, 255, 0.05);
+}
+.tcard--featured .tcard__face {
+  padding: 0.75rem 0.6rem;
+  border-color: rgba(196, 124, 255, 0.5);
+  box-shadow: 0 0 22px rgba(139, 44, 255, 0.18), 0 8px 26px rgba(0, 0, 0, 0.45), inset 0 0 26px rgba(139, 44, 255, 0.09);
+}
+
+.tcard__kicker { position: absolute; top: 0.5rem; left: 0; right: 0; font-size: 0.54rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+.tcard__num { font-family: var(--serif); font-size: 0.72rem; letter-spacing: 0.14em; color: var(--suit); }
+.tcard--featured .tcard__num { margin-top: 0.5rem; font-size: 0.82rem; }
+.tcard__emblem { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; min-height: 0; }
+.tcard__glyph { font-family: var(--glyph); font-size: 1.8rem; color: var(--ink); text-shadow: 0 0 7px rgba(139, 44, 255, 0.4); }
+.tcard__abbr { font-family: var(--sans); font-size: 1.15rem; letter-spacing: 0.04em; color: var(--ink); }
+.tcard--featured .tcard__glyph { font-size: 2.4rem; }
+.tcard__name { font-family: var(--serif); font-size: 0.72rem; line-height: 1.12; color: var(--ink); }
+.tcard--featured .tcard__name { font-size: 0.98rem; }
+.tcard__tag { margin-top: 0.24rem; font-size: 0.52rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+.tcard--featured .tcard__tag { font-size: 0.56rem; }
+
+/* suit emblems (colour-coded by element) */
+.suit { width: 46%; height: auto; overflow: visible; color: var(--suit); }
+.suit .sk { stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.suit .sf { fill: currentColor; }
+
+/* featured wands */
+.wands { width: 58%; height: auto; overflow: visible; }
+.wand { stroke: var(--accent-soft); stroke-width: 2.4; stroke-linecap: round; opacity: 0.6; }
+.wand--lead { stroke: var(--ink); opacity: 1; stroke-width: 3; }
+
+.tcard__back { transform: rotateY(180deg); justify-content: center; gap: 0.35rem; padding: 0.55rem 0.45rem; }
+.tcard__kw { font-size: 0.55rem; letter-spacing: 0.02em; color: var(--suit); line-height: 1.3; }
+.tcard__meaning { margin: 0; font-size: 0.6rem; line-height: 1.36; color: var(--ink-dim); }
+.tcard--featured .tcard__back { padding: 0.7rem 0.6rem; }
+.tcard--featured .tcard__kw { font-size: 0.64rem; }
+.tcard--featured .tcard__meaning { font-size: 0.73rem; line-height: 1.42; }
+
+@media (prefers-reduced-motion: reduce) { .tcard__inner { transition: none; } }
+@media (max-width: 480px) {
+  .tarot__grid { justify-content: center; }
+  .tcard--featured { --w: 138px; }
+  .tarot__grid .tcard { --w: 84px; }
+}
+
+/* ================= Discord presence (Lanyard) ================= */
+/* Hidden until live data arrives, mirroring the page's silent degradation. */
+/* width:100% keeps this from shrink-to-fitting around the card's min-content —
+   see the note on the .screen/.elsewhere width rule. */
+.presence { display: none; width: 100%; }
+.presence.is-live { display: block; }
+
+.presence__card {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.9rem, 3vw, 1.3rem);
+  max-width: 52rem;
+  margin-inline: auto;      /* .presence is full-width now; keep the card centred */
+  padding: 1rem 1.15rem;
+  border-radius: 18px;
+  border: 1px solid rgba(139, 44, 255, 0.28);
+  background: linear-gradient(165deg, rgba(30, 10, 50, 0.9), rgba(10, 5, 18, 0.94));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.38), inset 0 0 20px rgba(139, 44, 255, 0.05);
+  text-shadow: none;
+}
+
+/* avatar + status dot + decoration ring */
+.presence__avatar { position: relative; flex: 0 0 auto; width: 56px; height: 56px; }
+.presence__pfp {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--hair-strong);
+  background: var(--bg-1);
+}
+.presence__deco {
+  position: absolute;
+  top: -12%; left: -12%;
+  width: 124%; height: 124%;
+  pointer-events: none;
+}
+.presence__dot {
+  position: absolute;
+  right: -1px; bottom: -1px;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  border: 2.5px solid #0c0713;   /* punch-out ring against the card */
+  background: var(--ink-faint);
+}
+.presence__dot[data-status="online"]  { background: #72d68c; }
+.presence__dot[data-status="idle"]    { background: var(--conj); }
+.presence__dot[data-status="dnd"]     { background: #ff4f9a; }
+.presence__dot[data-status="offline"] { background: var(--ink-faint); }
+/* a slow ripple while the account is actively online/idle/dnd */
+.presence__dot.is-live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: presence-pulse 2.4s var(--ease) infinite;
+}
+@keyframes presence-pulse {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  70%  { transform: scale(2.1); opacity: 0; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+
+/* identity row */
+.presence__body { min-width: 0; flex: 1 1 auto; }
+/* Names and custom statuses are arbitrary user text, and a single long token
+   would otherwise reach out past the card. `anywhere` rather than `break-word`
+   is deliberate: only `anywhere` shrinks min-content, which is what actually
+   drives the overflow here. (The activity lines instead clip via nowrap +
+   text-overflow, so they need no wrapping.) */
+.presence__name, .presence__user, .presence__custom, .presence__status { overflow-wrap: anywhere; }
+.presence__idrow { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.35rem 0.55rem; }
+.presence__name {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(1.05rem, 2.6vw, 1.22rem);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.presence__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.06rem 0.42rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  border-radius: 5px;
+  border: 1px solid var(--hair-strong);
+  background: rgba(244, 237, 249, 0.05);
+  color: var(--ink-dim);
+}
+.presence__tag-badge { width: 0.9em; height: 0.9em; }
+.presence__user { font-size: 0.78rem; color: var(--ink-faint); }
+
+/* custom status line */
+.presence__custom {
+  margin: 0.32rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-dim);
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+}
+.presence__emoji { width: 1.15em; height: 1.15em; vertical-align: -0.15em; flex: 0 0 auto; }
+
+/* bare status word (shown when there's no activity) */
+.presence__status { margin: 0.32rem 0 0; font-size: 0.82rem; color: var(--ink-dim); }
+
+/* activity / Spotify block */
+.presence__act {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.55rem;
+}
+.presence__act-img {
+  width: 42px; height: 42px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex: 0 0 auto;
+  border: 1px solid var(--hair);
+  background: var(--bg-1);
+}
+.presence__act-txt { min-width: 0; display: flex; flex-direction: column; gap: 0.04rem; }
+.presence__act-name {
+  font-size: 0.82rem;
+  color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.presence__verb { color: var(--accent-soft); }
+.presence__act-detail,
+.presence__act-state {
+  font-size: 0.76rem;
+  color: var(--ink-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.presence__act-state { color: var(--ink-faint); }
+
+/* Spotify progress bar */
+.presence__bar {
+  margin-top: 0.4rem;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(244, 237, 249, 0.12);
+  overflow: hidden;
+}
+.presence__bar-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+  transition: width 1s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .presence__bar-fill { transition: none; }
+}
+@media (max-width: 480px) {
+  .presence__card { padding: 0.85rem 0.9rem; }
+  .presence__avatar, .presence__pfp { width: 48px; height: 48px; }
+}
+
+/* ================= External-link shelf ================= */
+/* Sits directly above the Discord card inside .elsewhere, which owns the
+   spacing on every side; the shelf itself adds none. */
+.elsewhere {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--shelf-gap);                 /* shelf -> card */
+  /* shelf <- grid: cancel .screen's gap and re-add --shelf-gap. Same value
+     either side => the shelf sits centred between the grid and the card. */
+  margin-top: calc(var(--shelf-gap) - var(--screen-gap));
+}
+.shelf {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(1.5rem, 6vw, 3rem);
+}
+/* Seven icons need less air than six did. At 375px the row came to 327.75px
+   against a 327px column — over by a hair, which drops the last icon onto a
+   line of its own and reads as a mistake rather than a wrap. Narrow screens
+   only; the gap above 416px is untouched. */
+@media (max-width: 26rem) {
+  .shelf { gap: clamp(0.8rem, 4.2vw, 1.5rem); }
+}
+
+.shelf__link {
+  /* Per-icon float + flicker timing is set by :nth-child below, so no two
+     glow-flicker in unison (nor with the tagline band). */
+  --gd: 9s;    /* float duration  */
+  --ff: 7s;    /* flicker duration */
+  display: inline-flex;
+  width: clamp(26px, 7vw, 30px);
+  height: clamp(26px, 7vw, 30px);
+  color: var(--ink-dim);
+  will-change: transform, opacity;
+  animation: shelf-float var(--gd) ease-in-out infinite, shelf-flicker var(--ff) ease-in-out infinite;
+  animation-delay: var(--fd1, 0s), var(--fd2, 0s);
+  transition: color 0.3s var(--ease);
+}
+.shelf__link:hover,
+.shelf__link:focus-visible { color: var(--accent-soft); outline: none; }
+
+/* The icon carries the faint glow (and the hover lift) so it never fights the
+   float animation, which owns the link's transform. */
+.shelf__icon {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 0 5px rgba(139, 44, 255, 0.28)) drop-shadow(0 1px 2px rgba(5, 2, 10, 0.5));
+  transition: transform 0.3s var(--ease), filter 0.3s var(--ease);
+}
+.shelf__icon--fill { fill: currentColor; }
+.shelf__icon--stroke { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.shelf__link:hover .shelf__icon,
+.shelf__link:focus-visible .shelf__icon {
+  transform: translateY(-3px) scale(1.1);
+  filter: drop-shadow(0 0 8px rgba(192, 92, 255, 0.6)) drop-shadow(0 0 16px rgba(139, 44, 255, 0.35));
+}
+
+/* desynced timings — non-harmonic durations + offset phases */
+.shelf__link:nth-child(1) { --gd: 9.5s;  --ff: 6.3s; --fd1: -1.2s; --fd2: -0.4s; }
+.shelf__link:nth-child(2) { --gd: 11s;   --ff: 7.7s; --fd1: -4.6s; --fd2: -3.1s; }
+.shelf__link:nth-child(3) { --gd: 8.5s;  --ff: 9.1s; --fd1: -2.3s; --fd2: -6.2s; }
+.shelf__link:nth-child(4) { --gd: 12s;   --ff: 6.9s; --fd1: -7.1s; --fd2: -1.9s; }
+.shelf__link:nth-child(5) { --gd: 10s;   --ff: 8.3s; --fd1: -5.4s; --fd2: -4.7s; }
+.shelf__link:nth-child(6) { --gd: 10.7s; --ff: 7.2s; --fd1: -3.8s; --fd2: -8.5s; }
+.shelf__link:nth-child(7) { --gd: 9.2s;  --ff: 8.8s; --fd1: -6.5s; --fd2: -2.6s; }
+
+@keyframes shelf-float {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  25%  { transform: translate3d(1.5px, -3px, 0) rotate(0.4deg); }
+  50%  { transform: translate3d(-1px, 2px, 0) rotate(-0.3deg); }
+  75%  { transform: translate3d(-2px, -1.5px, 0) rotate(0.25deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+@keyframes shelf-flicker {
+  0%, 100% { opacity: 0.9; }
+  8%   { opacity: 0.6; }
+  9%   { opacity: 0.9; }
+  42%  { opacity: 0.96; }
+  44%  { opacity: 0.68; }
+  46%  { opacity: 0.9; }
+  72%  { opacity: 0.85; }
+  73.5%{ opacity: 0.66; }
+  75%  { opacity: 0.9; }
+}
+
+/* Cursor-anchored leader-line readout (replaces the native tooltip), styled to
+   the tarot signature diagram: thin line → node → monospace name + URL. */
+.shelf-tip {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 60;
+  overflow: visible;
+  opacity: 0;
+  transition: opacity 0.18s var(--ease);
+}
+.shelf-tip.is-on { opacity: 1; }
+.shelf-tip__line { stroke: var(--hair-strong); stroke-width: 1; }
+.shelf-tip__line, .shelf-tip__node { filter: drop-shadow(0 0 4px rgba(139, 44, 255, 0.35)); }
+.shelf-tip__node { fill: var(--accent-soft); }
+.shelf-tip__tick { fill: var(--ink-faint); }
+.shelf-tip__name, .shelf-tip__url {
+  font-family: var(--mono);
+  paint-order: stroke;               /* dark halo so the text reads over footage */
+  stroke: rgba(5, 2, 10, 0.66);
+  stroke-width: 2.6px;
+  stroke-linejoin: round;
+}
+.shelf-tip__name { font-size: 11px; fill: var(--ink-dim); }
+.shelf-tip__url  { font-size: 8.5px; fill: var(--ink-faint); letter-spacing: 0.02em; }
+
+/* ---- Entrance motion ---- */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: rise 0.9s var(--ease) forwards;
+}
+.reveal:nth-child(1) { animation-delay: 0.05s; }
+.reveal:nth-child(2) { animation-delay: 0.16s; }
+.reveal:nth-child(3) { animation-delay: 0.27s; }
+/* app.js stamps --rise-delay per card as it builds them, so the ladder holds for
+   any number of cards and prepending the current-project card doesn't renumber
+   (and so restart) the ones already on screen. */
+.links .link {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: rise 0.7s var(--ease) forwards;
+  animation-delay: var(--rise-delay, 0.3s);
+}
+/* The current-project card rides its ember glow on top of the same rise. This
+   has to sit after the rule above and match its specificity: `animation` is a
+   shorthand, so .links .link would otherwise reset the pair back to rise alone.
+   The glow's delay is negative so it is already mid-cycle when the card lands,
+   rather than igniting on arrival. */
+.links .link--current {
+  animation: rise 0.7s var(--ease) forwards, ember-breathe 9.4s ease-in-out infinite;
+  animation-delay: var(--rise-delay, 0.22s), -2.6s;
+}
+
+@keyframes rise {
+  to { opacity: 1; transform: none; }
+}
+
+/* ---- Reduced motion: kill the video + all entrance motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .bg__video { display: none; }
+  .bg__video, .reveal, .links .link, .link__arrow, * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .reveal, .links .link { opacity: 1; transform: none; }
+  .link__meta { opacity: 1; }
+}
+
+/* ---- Small screens ---- */
+@media (max-width: 480px) {
+  /* Override the token, not `gap` itself — .elsewhere's negative margin is
+     derived from --main-gap and would over-pull into the grid otherwise. */
+  main { justify-content: flex-end; padding-bottom: calc(var(--pad) + env(safe-area-inset-bottom)); --main-gap: 2rem; }
+}
+
+
+/* ================================================================
+   Blake Walker Discord-profile palette — final surface overrides
+   Deep purple-black base, neon violet accents, soft lavender text.
+   ================================================================ */
+:root {
+  --discord-bg: #07040d;
+  --discord-panel: #12071f;
+  --discord-panel-2: #1b0a2e;
+  --discord-violet: #8b2cff;
+  --discord-violet-bright: #c05cff;
+  --discord-magenta: #ef4cff;
+  --discord-lavender: #cdbdd8;
+  --discord-white: #f4edf9;
+}
+
+body { background-color: var(--discord-bg); }
+.bg {
+  background:
+    radial-gradient(115% 125% at 76% 8%, rgba(139,44,255,.22) 0%, transparent 45%),
+    radial-gradient(90% 100% at 8% 88%, rgba(68,18,112,.18) 0%, transparent 52%),
+    linear-gradient(158deg, #160825 0%, #10071c 52%, #07040d 100%);
+}
+.bg__scrim {
+  background:
+    radial-gradient(115% 95% at 26% 22%, transparent 0%, rgba(7,4,13,.62) 100%),
+    linear-gradient(185deg, rgba(7,4,13,.42) 0%, rgba(7,4,13,.34) 40%, rgba(7,4,13,.84) 100%);
+}
+
+/* Make floating icon and card glow read like the Discord profile rather than orange. */
+.shelf__link:hover,
+.shelf__link:focus-visible,
+.chart__anchor:hover,
+.chart__anchor:focus-visible {
+  filter: drop-shadow(0 0 8px rgba(192,92,255,.52));
+}
+
+/* Discord presence panel */
+.discord,
+.discord-card,
+.presence-card {
+  background: linear-gradient(145deg, rgba(27,10,46,.90), rgba(10,5,18,.94));
+  border-color: rgba(192,92,255,.30);
+  box-shadow: 0 16px 50px rgba(0,0,0,.30), inset 0 1px 0 rgba(244,237,249,.035);
+}
+
+/* Selection and focus states across the entire experience. */
+::selection { background: rgba(139,44,255,.38); color: #fff; }
+:focus-visible { outline-color: rgba(192,92,255,.74); }
+
+
+/* Blake natal purple refinements */
+.chart {
+  border-top-color: rgba(181, 76, 255, 0.14);
+}
+.chart__anchor {
+  color: rgba(184, 169, 195, 0.72);
+}
+.chart__anchor:hover,
+.chart__anchor:focus-visible {
+  color: #B54CFF;
+}
+.chart__controls .segmented,
+.chart__controls .seg {
+  border-color: rgba(181, 76, 255, 0.20);
+}
+.chart__controls .seg.is-on,
+.chart__controls .seg[aria-pressed="true"] {
+  border-color: rgba(181, 76, 255, 0.52);
+  box-shadow: 0 0 18px rgba(139, 44, 255, 0.18);
+}
+.chart__detail,
+.chart__list li {
+  border-color: rgba(181, 76, 255, 0.12);
+}
+
+
+/* Discord presence setup state */
+.presence__setup {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--ink);
+}
+.presence__setup strong {
+  font-size: 1rem;
+  color: var(--accent-soft);
+}
+.presence__setup span {
+  color: var(--ink-dim);
+  font-size: 0.82rem;
+}
+.presence__setup code {
+  color: #d9c7ff;
+  background: rgba(139, 44, 255, 0.12);
+  border: 1px solid rgba(139, 44, 255, 0.22);
+  padding: 0.08rem 0.3rem;
+  border-radius: 5px;
+}

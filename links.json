@@ -1,0 +1,47 @@
+{
+  "profile": {
+    "handle": "XVBIGKILLERXV",
+    "tagline": "Creative Developer",
+    "github": "https://github.com/XVBIGKILLERXV"
+  },
+  "categories": [
+    {
+      "id": "bots",
+      "label": "Discord Bots"
+    },
+    {
+      "id": "experiments",
+      "label": "Experiments"
+    }
+  ],
+  "links": [
+    {
+      "title": "Nexora",
+      "url": "#",
+      "category": "bots",
+      "blurb": "Multipurpose Discord bot covering moderation, administration, economy, tickets, entertainment and live server utilities.",
+      "featured": true
+    },
+    {
+      "title": "The Corrections Assistant Bot",
+      "url": "#",
+      "category": "bots",
+      "blurb": "Creator — a purpose-built Discord assistant supporting corrections workflows, information access and community operations.",
+      "featured": true
+    },
+    {
+      "title": "Corrections Control Center Bot",
+      "url": "#",
+      "category": "bots",
+      "blurb": "Creator — a control-centre focused Discord bot for structured corrections operations, staff tooling and coordination.",
+      "featured": true
+    },
+    {
+      "title": "Experiments",
+      "url": "#",
+      "category": "experiments",
+      "blurb": "Small prototypes, visual experiments, interface concepts and ideas that do not fit neatly into one category.",
+      "featured": true
+    }
+  ]
+}
