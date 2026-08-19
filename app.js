@@ -521,36 +521,59 @@
     });
   }
 
-  async function initSubtag() {
-    const host = document.getElementById('subtag');
-    if (!host) return;
+async function initSubtag() {
+  const host = document.getElementById('subtag');
+  if (!host) return;
 
-    const phrase = (host.textContent || 'Ideas become real when you build them.').trim();
+  let phrases = SUBTAG_FALLBACK;
 
-    // Build the fixed quote using the same per-character wrappers/glitch effect
-    // as the original rotating sub-tagline implementation.
-    const line = el('span', 'subtag__phrase');
-    const chars = [];
-    phrase.split('\n').forEach((row, ri) => {
-      if (ri > 0) line.append(el('br'));
-      row.split(' ').forEach((word, wi) => {
-        if (wi > 0) line.append(document.createTextNode(' '));
-        if (!word) return;
-        const w = el('span', 'subtag__word');
-        for (const ch of word) {
-          const c = el('span', 'subtag__char');
-          c.textContent = ch;
-          w.append(c);
-          chars.push(c);
-        }
-        line.append(w);
-      });
-    });
-    host.textContent = '';
-    host.append(line);
+  try {
+    const res = await fetch('subtaglines.json', { cache: 'no-cache' });
 
-    startGlitchLoop(chars);
+    if (res.ok) {
+      const data = await res.json();
+
+      if (Array.isArray(data.phrases) && data.phrases.length) {
+        phrases = data.phrases;
+      }
+    }
+  } catch {
+    // Keep fallback phrase if the JSON cannot be loaded.
   }
+
+  const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+
+  const line = el('span', 'subtag__phrase');
+  const chars = [];
+
+  phrase.split('\n').forEach((row, ri) => {
+    if (ri > 0) line.append(el('br'));
+
+    row.split(' ').forEach((word, wi) => {
+      if (wi > 0) {
+        line.append(document.createTextNode(' '));
+      }
+
+      if (!word) return;
+
+      const w = el('span', 'subtag__word');
+
+      for (const ch of word) {
+        const c = el('span', 'subtag__char');
+        c.textContent = ch;
+        w.append(c);
+        chars.push(c);
+      }
+
+      line.append(w);
+    });
+  });
+
+  host.textContent = '';
+  host.append(line);
+
+  startGlitchLoop(chars);
+}
 
   /* ---------- background video readiness ---------- */
 
