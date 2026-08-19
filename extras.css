@@ -1,0 +1,523 @@
+/* =========================================================
+   BLAKE WALKER — SITE EXTRAS
+   ========================================================= */
+
+:root {
+  --bw-purple: #9b4dff;
+  --bw-purple-light: #c49aff;
+  --bw-bg: #09050f;
+  --bw-panel: rgba(18, 8, 29, 0.94);
+  --bw-border: rgba(178, 112, 255, 0.22);
+  --bw-text: #f4edf9;
+  --bw-muted: #a995b8;
+}
+
+
+/* =========================================================
+   SYSTEM INFO
+   ========================================================= */
+
+.bw-system-info {
+  position: fixed;
+  right: 24px;
+  bottom: 22px;
+  z-index: 40;
+
+  display: flex;
+  gap: 24px;
+
+  font-family: monospace;
+  text-transform: uppercase;
+
+  color: var(--bw-text);
+
+  mix-blend-mode: normal;
+}
+
+.bw-info-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.bw-info-label {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--bw-muted);
+}
+
+.bw-info-value {
+  margin-top: 3px;
+
+  font-size: 12px;
+  letter-spacing: 0.12em;
+
+  cursor: default;
+}
+
+#bw-visitor-count {
+  cursor: pointer;
+}
+
+.bw-info-small {
+  margin-top: 2px;
+
+  font-size: 8px;
+  letter-spacing: 0.12em;
+
+  color: var(--bw-muted);
+}
+
+
+/* =========================================================
+   BOOT SCREEN
+   ========================================================= */
+
+.bw-boot {
+  position: fixed;
+  inset: 0;
+
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #190b29 0%,
+      #09050f 65%
+    );
+
+  color: var(--bw-text);
+
+  opacity: 1;
+
+  transition:
+    opacity 0.7s ease,
+    visibility 0.7s ease;
+}
+
+.bw-boot-hide {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.bw-boot-inner {
+  width: min(420px, calc(100vw - 50px));
+
+  font-family: monospace;
+}
+
+.bw-boot-title {
+  margin-bottom: 30px;
+
+  font-size: 14px;
+  letter-spacing: 0.35em;
+
+  color: var(--bw-purple-light);
+}
+
+.bw-boot-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  font-size: 11px;
+  letter-spacing: 0.13em;
+
+  color: var(--bw-muted);
+}
+
+.bw-boot-lines div {
+  opacity: 0;
+  transform: translateY(5px);
+
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.bw-boot-lines div.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.bw-boot-ready {
+  margin-top: 30px;
+
+  font-size: 10px;
+  letter-spacing: 0.3em;
+
+  color: var(--bw-purple-light);
+
+  animation: bwPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes bwPulse {
+  from {
+    opacity: 0.35;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+/* =========================================================
+   TERMINAL BUTTON
+   ========================================================= */
+
+.bw-terminal-launcher {
+  position: fixed;
+
+  left: 22px;
+  bottom: 20px;
+
+  z-index: 60;
+
+  appearance: none;
+
+  border: 1px solid var(--bw-border);
+  border-radius: 50%;
+
+  width: 38px;
+  height: 38px;
+
+  background: rgba(10, 5, 16, 0.72);
+
+  color: var(--bw-purple-light);
+
+  font-family: monospace;
+  font-size: 13px;
+
+  cursor: pointer;
+
+  backdrop-filter: blur(10px);
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.bw-terminal-launcher:hover {
+  border-color: rgba(178, 112, 255, 0.6);
+
+  background: rgba(35, 13, 54, 0.9);
+
+  transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   TERMINAL WINDOW
+   ========================================================= */
+
+.bw-terminal {
+  position: fixed;
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px;
+
+  background: rgba(3, 1, 6, 0.68);
+
+  backdrop-filter: blur(8px);
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+}
+
+.bw-terminal.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.bw-terminal-window {
+  width: min(680px, 100%);
+  height: min(480px, 72vh);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid var(--bw-border);
+  border-radius: 10px;
+
+  background: rgba(8, 4, 13, 0.97);
+
+  color: var(--bw-text);
+
+  font-family: monospace;
+}
+
+.bw-terminal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 13px 16px;
+
+  border-bottom: 1px solid var(--bw-border);
+
+  font-size: 10px;
+  letter-spacing: 0.18em;
+
+  color: var(--bw-purple-light);
+}
+
+.bw-terminal-close {
+  border: 0;
+  background: transparent;
+
+  color: var(--bw-muted);
+
+  font-size: 19px;
+
+  cursor: pointer;
+}
+
+.bw-terminal-output {
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding: 20px;
+
+  font-size: 12px;
+  line-height: 1.75;
+
+  scrollbar-width: thin;
+}
+
+.bw-terminal-line {
+  min-height: 1.2em;
+  white-space: pre-wrap;
+}
+
+.bw-terminal-line.command {
+  color: var(--bw-purple-light);
+}
+
+.bw-terminal-input-row {
+  display: flex;
+  align-items: center;
+
+  padding: 13px 18px;
+
+  border-top: 1px solid var(--bw-border);
+}
+
+.bw-terminal-prompt {
+  margin-right: 10px;
+
+  color: var(--bw-purple);
+}
+
+.bw-terminal-input {
+  flex: 1;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: var(--bw-text);
+
+  font-family: monospace;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   DEVELOPER MODE
+   ========================================================= */
+
+html.bw-dev-mode body {
+  background-image:
+    linear-gradient(
+      rgba(157, 77, 255, 0.045) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(157, 77, 255, 0.045) 1px,
+      transparent 1px
+    );
+
+  background-size: 32px 32px;
+}
+
+html.bw-dev-mode body::before {
+  content: "DEV MODE // BLAKE.WALKER";
+
+  position: fixed;
+
+  top: 12px;
+  left: 14px;
+
+  z-index: 999;
+
+  font-family: monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+
+  color: var(--bw-purple-light);
+
+  pointer-events: none;
+}
+
+html.bw-dev-mode section {
+  outline: 1px dashed rgba(157, 77, 255, 0.16);
+  outline-offset: -1px;
+}
+
+html.bw-dev-mode a::after {
+  content: " ↗";
+
+  font-family: monospace;
+  font-size: 0.6em;
+
+  color: var(--bw-purple);
+}
+
+
+/* =========================================================
+   HERO GLITCH
+   ========================================================= */
+
+.bw-glitch {
+  animation: bwGlitch 0.12s linear infinite;
+}
+
+@keyframes bwGlitch {
+  0% {
+    transform: translate(0);
+  }
+
+  25% {
+    transform: translate(-2px, 1px);
+  }
+
+  50% {
+    transform: translate(2px, -1px);
+  }
+
+  75% {
+    transform: translate(-1px, -1px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+}
+
+
+/* =========================================================
+   SECRET MESSAGE
+   ========================================================= */
+
+.bw-secret-message,
+.bw-ghost-message {
+  position: fixed;
+
+  left: 50%;
+  top: 50%;
+
+  z-index: 5000;
+
+  transform:
+    translate(-50%, -50%)
+    scale(0.96);
+
+  padding: 16px 22px;
+
+  border: 1px solid var(--bw-border);
+  border-radius: 8px;
+
+  background: rgba(8, 4, 13, 0.96);
+
+  color: var(--bw-purple-light);
+
+  font-family: monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+
+  text-align: center;
+
+  opacity: 0;
+
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+
+  pointer-events: none;
+}
+
+.bw-secret-message.visible,
+.bw-ghost-message.visible {
+  opacity: 1;
+
+  transform:
+    translate(-50%, -50%)
+    scale(1);
+}
+
+.bw-ghost-message {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.bw-ghost-message small {
+  color: var(--bw-muted);
+
+  font-size: 8px;
+  letter-spacing: 0.14em;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+  .bw-system-info {
+    right: 14px;
+    bottom: 14px;
+
+    gap: 14px;
+  }
+
+  .bw-info-small {
+    display: none;
+  }
+
+  .bw-terminal-launcher {
+    left: 14px;
+    bottom: 14px;
+  }
+
+  .bw-terminal {
+    padding: 12px;
+  }
+
+  .bw-terminal-window {
+    height: 70vh;
+  }
+
+}
