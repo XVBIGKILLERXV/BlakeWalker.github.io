@@ -17,12 +17,12 @@
     {
       title: "The Corrections Assistant Bot",
       url: "#",
-      blurb: "Creator — a purpose-built Discord assistant supporting corrections workflows, highly customizable, information access and community operations.",
+      blurb: "Creator — a purpose built Discord assistant supporting corrections workflows, highly customizable, information access and community operations.",
     },
     {
       title: "Corrections Control Center Bot",
       url: "#",
-      blurb: "Creator — a control-centre focused Discord bot for structured corrections operations, highly customizable, staff tooling and coordination.",
+      blurb: "Creator — a control centre focused Discord bot for structured corrections operations, highly customizable, staff tooling and coordination.",
     },
     {
       title: "Experiments",
