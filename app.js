@@ -521,14 +521,14 @@
     });
   }
 
-async function initSubtag() {
+  async function initSubtag() {
   const host = document.getElementById('subtag');
   if (!host) return;
 
   let phrases = SUBTAG_FALLBACK;
 
   try {
-    const res = await fetch('subtaglines.json', { cache: 'no-cache' });
+    const res = await fetch('subtaglines.json', { cache: 'no-store' });
 
     if (res.ok) {
       const data = await res.json();
@@ -538,7 +538,7 @@ async function initSubtag() {
       }
     }
   } catch {
-    // Keep fallback phrase if the JSON cannot be loaded.
+    // Keep fallback if loading fails
   }
 
   const phrase = phrases[Math.floor(Math.random() * phrases.length)];
@@ -550,10 +550,7 @@ async function initSubtag() {
     if (ri > 0) line.append(el('br'));
 
     row.split(' ').forEach((word, wi) => {
-      if (wi > 0) {
-        line.append(document.createTextNode(' '));
-      }
-
+      if (wi > 0) line.append(document.createTextNode(' '));
       if (!word) return;
 
       const w = el('span', 'subtag__word');
