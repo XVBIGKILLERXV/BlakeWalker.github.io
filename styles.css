@@ -175,6 +175,10 @@ main {
   width: 4ch;                              /* JS sets a constant slot width = widest prefix */
   vertical-align: -0.42em;                 /* tuned so the word baseline meets "terminals" */
 }
+.spindle__suffix {
+    display: inline-block;
+    margin-left: 0.14em;
+}
 .spindle__track {
   position: absolute;
   top: 0;
