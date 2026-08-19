@@ -4,13 +4,9 @@ Personal GitHub Pages portfolio for Blake Walker, customised around the uploaded
 
 ## Selected work
 
-- Aurora Athletics Studio
-- Nexora
+- Nexora Bot - Discord all in one bot ( WIP )
 - The Corrections Assistant Bot — Creator
 - Corrections Control Center Bot — Creator
-- Character / 3D
-- Development
-- Experiments
 
 ## Before publishing
 
@@ -18,7 +14,6 @@ Replace these placeholders in `index.html`:
 
 - `YOUR_DISCORD_ID`
 - `YOUR_STEAM_ID`
-- `YOUR_EMAIL@example.com`
 
 Replace `YOUR_DISCORD_USER_ID` in `discord.js` with your numeric Discord user ID. The live card uses Lanyard and stays hidden until the account is available there.
 
