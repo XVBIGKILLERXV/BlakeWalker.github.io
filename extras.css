@@ -102,8 +102,7 @@ main, .bg__scrim, .grain { position: relative; z-index: 1; }
 .bw-visitor { pointer-events: auto; cursor: pointer; }
 
 /* Terminal + developer buttons */
-.bw-terminal-launcher,
-.bw-dev-launcher {
+.bw-terminal-launcher {
   position: fixed;
   bottom: 20px;
   z-index: 700;
@@ -120,17 +119,10 @@ main, .bg__scrim, .grain { position: relative; z-index: 1; }
   transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
 }
 .bw-terminal-launcher { left: 22px; }
-.bw-dev-launcher { left: 70px; font-size: 10px; }
-.bw-terminal-launcher:hover,
-.bw-dev-launcher:hover {
+.bw-terminal-launcher:hover {
   transform: translateY(-2px);
   border-color: rgba(196,154,255,.7);
   background: rgba(29,10,46,.96);
-}
-.bw-dev-launcher.is-active {
-  border-color: rgba(196,154,255,.9);
-  box-shadow: 0 0 22px rgba(155,77,255,.35), inset 0 0 12px rgba(155,77,255,.1);
-  color: #fff;
 }
 
 /* Terminal */
@@ -450,7 +442,6 @@ html.bw-dev-mode button {
   .bw-system-info { right: 14px; bottom: 14px; gap: 14px; }
   .bw-info-small { display: none; }
   .bw-terminal-launcher { left: 14px; bottom: 14px; }
-  .bw-dev-launcher { left: 62px; bottom: 14px; }
   .bw-terminal { padding: 12px; }
   .bw-terminal-window { height: 72vh; }
   .bw-project-preview { display: none; }

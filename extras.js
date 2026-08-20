@@ -7,13 +7,21 @@
     github: "https://github.com/XVBIGKILLERXV",
     discord: "https://discord.com/users/417191267546562560",
     currentlyModding: "Ghost Recon Breakpoint",
-    projectDataUrl: "links.json"
+    projectDataUrl: "links.json",
+
+    // Convenience gate only. GitHub Pages is static, so this is not true security.
+    // Change this password to something personal before publishing if you want.
+    devPassword: "Auroa-Delta-74!"
   };
 
   const state = {
     projects: [],
     devMode: false,
-    terminalStarted: false
+    terminalStarted: false,
+    devAuthenticated: sessionStorage.getItem("bw_dev_authenticated") === "true",
+    awaitingDevPassword: false,
+    failedAttempts: 0,
+    lockedUntil: 0
   };
 
   /* =========================================================
@@ -352,35 +360,27 @@
     return document.documentElement.classList.contains("bw-dev-mode");
   }
 
+  function isDevAuthenticated() {
+    return state.devAuthenticated === true;
+  }
+
   function setDeveloperMode(enabled) {
     state.devMode = enabled;
     document.documentElement.classList.toggle("bw-dev-mode", enabled);
-
-    const button = document.querySelector(".bw-dev-launcher");
-    if (button) {
-      button.classList.toggle("is-active", enabled);
-      button.setAttribute("aria-pressed", String(enabled));
-      button.title = enabled ? "Disable Developer Mode" : "Enable Developer Mode";
-    }
-
     showDevTransition(enabled);
   }
 
   function toggleDeveloperMode() {
+    if (!isDevAuthenticated()) return false;
     setDeveloperMode(!developerModeEnabled());
     return developerModeEnabled();
   }
 
-  function createDeveloperLauncher() {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "bw-dev-launcher";
-    button.setAttribute("aria-label", "Toggle Developer Mode");
-    button.setAttribute("aria-pressed", "false");
-    button.title = "Developer Mode";
-    button.textContent = "</>";
-    button.addEventListener("click", toggleDeveloperMode);
-    document.body.appendChild(button);
+  function lockDeveloperSession() {
+    state.devAuthenticated = false;
+    state.awaitingDevPassword = false;
+    sessionStorage.removeItem("bw_dev_authenticated");
+    if (developerModeEnabled()) setDeveloperMode(false);
   }
 
   function showDevTransition(enabled) {
@@ -476,7 +476,56 @@
     };
 
     const run = raw => {
-      const command = raw.trim().toLowerCase();
+      const entered = raw.trim();
+
+      if (state.awaitingDevPassword) {
+        const now = Date.now();
+
+        if (state.lockedUntil > now) {
+          const seconds = Math.ceil((state.lockedUntil - now) / 1000);
+          print("> ********", "command");
+          print("");
+          print(`DEVELOPER ACCESS LOCKED / ${seconds}s`);
+          print("");
+          return;
+        }
+
+        print("> ********", "command");
+
+        if (entered === CONFIG.devPassword) {
+          state.awaitingDevPassword = false;
+          state.failedAttempts = 0;
+          state.devAuthenticated = true;
+          sessionStorage.setItem("bw_dev_authenticated", "true");
+
+          print("");
+          print("ACCESS GRANTED");
+          print("DEVELOPER SESSION AUTHENTICATED");
+          print("");
+          setDeveloperMode(true);
+          print('Type "help" for developer commands.');
+        } else {
+          state.failedAttempts += 1;
+          print("");
+          print("ACCESS DENIED");
+
+          if (state.failedAttempts >= 3) {
+            state.failedAttempts = 0;
+            state.awaitingDevPassword = false;
+            state.lockedUntil = Date.now() + 60000;
+            print("TOO MANY FAILED ATTEMPTS");
+            print("DEVELOPER ACCESS LOCKED / 60s");
+          } else {
+            print(`ATTEMPTS REMAINING / ${3 - state.failedAttempts}`);
+            print("PASSWORD:");
+          }
+        }
+
+        print("");
+        return;
+      }
+
+      const command = entered.toLowerCase();
       if (!command) return;
       print(`> ${raw}`, "command");
 
@@ -484,12 +533,12 @@
         case "help":
           print("");
           print("AVAILABLE COMMANDS");
-          ["about","projects","private","status","modding","discord","github","natal","time","visitor","devmode","clear"]
+          ["about","projects","private","status","modding","discord","github","natal","time","visitor","unlock","clear"]
             .forEach(item => print(item));
           if (developerModeEnabled()) {
             print("");
             print("DEV COMMANDS");
-            ["system","build","whoami","inspect","projects --verbose","exit"].forEach(item => print(item));
+            ["system","build","whoami","inspect","projects --verbose","devmode","lock","exit"].forEach(item => print(item));
           }
           print("");
           print("There may be other commands.");
@@ -579,13 +628,49 @@
           print(`VISITOR / ${document.getElementById("bw-visitor-count")?.textContent || "UNKNOWN"}`);
           break;
 
+        case "unlock": {
+          const now = Date.now();
+
+          if (state.lockedUntil > now) {
+            const seconds = Math.ceil((state.lockedUntil - now) / 1000);
+            print("");
+            print(`DEVELOPER ACCESS LOCKED / ${seconds}s`);
+            break;
+          }
+
+          if (isDevAuthenticated()) {
+            print("");
+            print("DEVELOPER SESSION ALREADY AUTHENTICATED");
+            if (!developerModeEnabled()) setDeveloperMode(true);
+            break;
+          }
+
+          state.awaitingDevPassword = true;
+          print("");
+          print("DEVELOPER ACCESS");
+          print("PASSWORD:");
+          break;
+        }
+
         case "devmode": {
+          if (!isDevAuthenticated()) {
+            print("");
+            print("ACCESS DENIED");
+            print('Type "unlock".');
+            break;
+          }
+
           const enabled = toggleDeveloperMode();
           print("");
           print(enabled ? "DEVELOPER MODE ENABLED" : "DEVELOPER MODE DISABLED");
-          if (enabled) print('Type "help" for developer commands.');
           break;
         }
+
+        case "lock":
+          print("");
+          lockDeveloperSession();
+          print("DEVELOPER SESSION LOCKED");
+          break;
 
         case "system":
           if (!developerModeEnabled()) { print(""); print("ACCESS DENIED."); break; }
@@ -627,10 +712,9 @@
           break;
 
         case "exit":
-          if (developerModeEnabled()) {
-            setDeveloperMode(false);
-            print(""); print("DEVELOPER MODE DISABLED");
-          }
+          print("");
+          lockDeveloperSession();
+          print("DEVELOPER SESSION CLOSED");
           break;
 
         case "nomad":
@@ -723,7 +807,6 @@
     createSystemInfo();
     createAmbientGlow();
     createTerminal();
-    createDeveloperLauncher();
     initKeyboardSecret();
     initScrollReveals();
     loadProjectData();
