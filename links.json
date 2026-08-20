@@ -4,7 +4,6 @@
     "tagline": "Creative Developer",
     "github": "https://github.com/XVBIGKILLERXV"
   },
-
   "categories": [
     {
       "id": "bots",
@@ -15,35 +14,54 @@
       "label": "Experiments"
     }
   ],
-
   "links": [
     {
-      "title": "Nexora Discord Bot",
+      "title": "Nexora",
       "url": "#",
       "category": "bots",
       "blurb": "Multipurpose Discord bot covering moderation, administration, economy, tickets, entertainment and live server utilities.",
-      "featured": true
+      "featured": true,
+      "preview": "assets/previews/nexora.svg",
+      "type": "Discord Bot",
+      "status": "In Development",
+      "visibility": "Public",
+      "role": "Creator"
     },
     {
       "title": "The Corrections Assistant Bot",
       "url": "https://discord.com/users/417191267546562560",
       "category": "bots",
-      "blurb": "Private Project — Creator of a purpose-built Discord assistant supporting corrections workflows, highly customisable, information access and community operations. Contact me for more information.",
-      "featured": true
+      "blurb": "Private Project \u2014 Creator of a purpose-built Discord assistant supporting corrections workflows, information access and community operations. Contact me for more information.",
+      "featured": true,
+      "preview": "assets/previews/corrections-assistant.svg",
+      "type": "Discord Bot",
+      "status": "Active",
+      "visibility": "Private",
+      "role": "Creator"
     },
     {
       "title": "Corrections Control Center Bot",
       "url": "https://discord.com/users/417191267546562560",
       "category": "bots",
-      "blurb": "Private Project — Creator of a control-centre focused Discord bot for structured corrections operations, highly customisable, staff tooling and coordination. Contact me for more information.",
-      "featured": true
+      "blurb": "Private Project \u2014 Creator of a control-centre focused Discord bot for structured corrections operations, staff tooling and coordination. Contact me for more information.",
+      "featured": true,
+      "preview": "assets/previews/corrections-control.svg",
+      "type": "Discord Bot",
+      "status": "Active",
+      "visibility": "Private",
+      "role": "Creator"
     },
     {
       "title": "Experiments",
       "url": "#",
       "category": "experiments",
       "blurb": "Small prototypes, visual experiments, interface concepts and ideas that do not fit neatly into one category.",
-      "featured": true
+      "featured": true,
+      "preview": "assets/previews/experiments.svg",
+      "type": "Experiments",
+      "status": "Ongoing",
+      "visibility": "Public",
+      "role": "Creator"
     }
   ]
 }
